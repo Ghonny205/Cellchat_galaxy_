@@ -1,0 +1,53 @@
+<tool id="cellchat_analysis" name="CellChat Analysis" version="1.1.0" profile="21.05">
+    <description> redes de comunicación celular </description>
+    
+  <requirements>
+     <container type="docker">mi_contenedor_cellchat:latest</container>
+ </requirements>
+
+    <command detect_errors="exit_code"><![CDATA[
+Rscript '$__tool_directory__/cellchat_wrapper.R'
+--input '$input_rds'
+        --species '$species'
+        --group_by '$group_by'
+        --output_table '$output_tsv'
+        --output_plot '$output_pdf'
+        --output_rds '$output_rds'
+    ]]></command>
+
+    <inputs>
+        <param name="input_rds" type="data" format="rds" label="Objeto Seurat (RDS)" help="Archivo .rds que contiene los datos de scRNA-seq procesados."/>
+        
+        <param name="group_by" type="text" value="ident" label="Columna de tipos celulares" help="Nombre de la columna en los metadatos de Seurat que contiene los tipos celulares. Escribe 'ident' para usar la identidad por defecto.">
+            <validator type="empty_field" />
+        </param>
+
+        <param name="species" type="select" label="Especie">
+            <option value="human" selected="true">Humano</option>
+            <option value="mouse">Ratón</option>
+        </param>
+    </inputs>
+
+    <outputs>
+        <data name="output_tsv" format="tabular" label="CellChat: Tabla de interacciones en ${on_string}" />
+        <data name="output_pdf" format="pdf" label="CellChat: Gráficos de red en ${on_string}" />
+        <data name="output_rds" format="rds" label="CellChat: Objeto procesado en ${on_string}" />
+    </outputs>
+
+    <help><![CDATA[
+**Qué hace esta herramienta**
+Esta herramienta permite realizar un análisis completo de comunicación célula-célula utilizando **CellChat**. 
+
+**Mejoras en esta versión:**
+1. **Detección automática:** Si el objeto Seurat no está normalizado, la herramienta aplicará `NormalizeData` automáticamente.
+2. **Flexibilidad:** Puedes especificar qué columna de tus metadatos contiene los tipos celulares (ej. "cell_type", "clusters", etc.).
+3. **Interoperabilidad:** Además de los resultados visuales, la herramienta devuelve el objeto CellChat completo en formato .rds para que puedas seguir analizando en R.
+
+**Requisitos:**
+El objeto Seurat debe contener una matriz de expresión y, al menos, dos grupos celulares diferentes para poder inferir comunicación entre ellos.
+    ]]></help>
+
+    <citations>
+        <citation type="doi">10.1038/s41467-021-21246-9</citation>
+    </citations>
+</tool>
